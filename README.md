@@ -5,7 +5,7 @@
 DEMO
     demo1:
         model: model1
-        TestRun: testrun1:
+        TestRun: testrun1
             use mpc toolbox (block)
             no yaw reference; use DM steer angle
 
@@ -28,11 +28,15 @@ DEMO
 MODEL
     model1:
         state: Vy, Ay, Yaw_dot, r
-        input: Delta
+        control: Delta
 
     model2:
         state: Vx, Vy, Yaw_dot
-        input: Ffxl, Ffxr
+        control: Delta, Frxl, Frxr
+        
+   model3:
+        state: Vx, Vy, Yaw_dot
+        control: Delta, Srxl, Srxr
 
 TESTRUN
     demo1:
