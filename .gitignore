@@ -3,6 +3,7 @@
 
 ## ignore extension
 # *.txt
+.MATLABDriveTag
 
 ## ignore directory
 cmproject
@@ -11,5 +12,6 @@ slprj
 
 ## VS cache directory
 .vs/
+__pychace__
 
 
