@@ -1,44 +1,27 @@
 # demo1
 
-# DEMO DESCRIPTION
+## DEMO DESCRIPTION
 
-DEMO
-    demo1:
-        model: model1
-        TestRun: testrun1
-            use mpc toolbox (block)
-            no yaw reference; use DM steer angle
+### DEMO
 
-    demo2:
-        model: model2
-        TestRun: testrun2
-            use myMPC functions
-            PID Controller for the tire forces to Torques
-            no constraints about tire slip
-            not tuned PID gains; 
-                at the end of sim, error occurs
-            still using DM steer angle as yaw ref
+| DEMO | MODEL | TESTRUN | DESCRIPTION |
+|------|-------|---------|-------------|
+| demo1 | model1 | testrun1 |  use mpc toolbox (block)<br>no yaw reference; use DM steer angle |
+| demo2 | model1 | testrun1 |  use myMpc<br>PID for tire force tracking |
 
-    demo3:
-        model: model2
-        TestRun: testrun2
-            most of systems are same with demo2
-            trying sliding mode control to substitute PID controller
 
-MODEL
-    model1:
-        state: Vy, Ay, Yaw_dot, r
-        control: Delta
+### MODEL
+ 
+ Carmaker models are in `/utils/CM_vehicle_models/`.
 
-    model2:
-        state: Vx, Vy, Yaw_dot
-        control: Delta, Frxl, Frxr
-        
-   model3:
-        state: Vx, Vy, Yaw_dot
-        control: Delta, Srxl, Srxr
+| MODEL | STATE | CONTROL |
+|-------|-------|---------|
+| CMmodel | Vy, Ay, Yaw_dot, Yaw_ddot | Delta |
+| CMmodel2 | Vx, Vy, Yaw_dot | Delta, Frxl, Frxr |
+| CMmodel3 | Vx, Vy, Yaw_dot | Delta, Srxl, Srxr |
 
-TESTRUN
+
+### TESTRUN
     demo1:
         use IPG Driver on Long, Lat
 
