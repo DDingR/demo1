@@ -1,0 +1,44 @@
+{
+    "train_param": {
+        "MAX_EPISODE": 500000,
+        "MAX_TIME": 100,
+        "SAVE_PER": 5,
+        "TIME_DIFFERENCE": 0.01
+    },
+
+    "agent_param": {
+        "obs_list": {
+            "obs1": "obsExample1",
+            "obs2": "obsExample2"
+        },
+        "ctrl_list": {
+            "ctrl1": "ctrlExample1",
+            "ctrl2": "ctrlExample2"
+        },
+        "ctrl_max": {
+            "ctrl1": "1",
+            "ctrl2": "2"            
+        }
+    },
+
+    "RL_param": {
+        "Algorithm": "DDPG",
+        "load_network": "NOT_LOADED",
+        "learning_rate": {
+            "actor": 0.0001,
+            "critic": 0.0001
+        },
+        "max_buffer_size": 20000,
+        "batch_size": 32,
+        "gamma": 0.95,
+        "tau": 0.001,
+        "train_start_at": 1000,
+
+        "noise": {
+            "rho": 0.15,
+            "mu": 0,
+            "sigma": 0.2,
+            "increment": 0.1
+        }
+    }
+}
