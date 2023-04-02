@@ -1,0 +1,15 @@
+## ignore file
+# example.txt
+
+## ignore extension
+# *.txt
+
+## ignore directory
+cmproject
+slprj
+# [/Ll]ibrary/
+
+## VS cache directory
+.vs/
+
+
