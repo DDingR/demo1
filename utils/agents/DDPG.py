@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 import torch
 from torch import nn, cat
-from torch.utils.data import DataLoader
-from torchvision import datasets
+# from torch.utils.data import DataLoader
+# from torchvision import datasets
 from torchvision.transforms import ToTensor
 from torch.utils.tensorboard import SummaryWriter
 
