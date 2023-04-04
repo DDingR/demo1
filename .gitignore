@@ -6,7 +6,7 @@
 .MATLABDriveTag
 
 ## ignore directory
-cmproject
+# cmproject
 slprj
 # [/Ll]ibrary/
 
