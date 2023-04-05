@@ -1,70 +1,33 @@
-import matlab.engine
+import socket
+import time
+import sys, string, os
 
-class SimManager:
-    def __init__(self, modelName) -> None:
-        self.modelName = modelName
+class CM_dict():
+    def __init__(self, dictName, dictType) -> None:
+        self.name = dictName
+        self.type = dictType
+        self.data = None
+        self.read_msg = f"expr {$Qu}"
 
-    def __get_obs(self, obsInfo):
-        tout = [self.eng.workspace['tout']]
+class CM_Manager():
+    def __init__(self) -> None:
+        pass
 
-        obs = []
-        for name in obsInfo:
-            obs.append(self.eng.workspace[name])
-        
-        return tout, obs
+    def connectCM(self):
+        pass
+
+    def subscribe(self, quantity):
+        pass
+
+    def read(self):
+        pass
     
-    def __setParameter(self, block, name, value):
-        self.eng.set_param(
-            '{}/{}'.format(self.modelName, block),
-            name, str(value),
-            nargout=0
-        )
+    def DVA_write(self):
+        pass
 
-    def connectMatlab(self):
-        print('[ MNG] Connecting Matlab')
-        self.eng = matlab.engine.start_matlab()
-        print('[ MNG] Connected Successfully')
+    def DVA_release(self):
+        pass
 
-        print('[ MNG] Loading Simulink Model')
-        self.eng.eval(
-            "model = '{}';".format(self.modelName), nargout=0
-        )
-        self.eng.eval(
-            "load_system(model)", nargout=0
-        )
-        print('[ MNG] Loaded Successfully')
+    def send(self, msg):
+        pass
 
-    def reset(self, obsInfo, initial_parameters):
-        # print('[ MNG] Reset Env')
-        self.eng.set_param(self.modelName, 'SimulationCommand', 'stop', nargout=0)
-
-        for block in initial_parameters:
-            for name in initial_parameters[block]:
-                value = initial_parameters[block][name]
-                self.__setParameter(block, name, value)
-
-        self.eng.set_param(self.modelName,
-                           'SimulationCommand', 'start', 'SimulationCommand', 'pause', 
-                           nargout=0)
-        
-        return self.__get_obs(obsInfo)
-
-    def step(self, obsInfo, abj_parameters):
-        for block in abj_parameters:
-            for name in abj_parameters[block]:
-                value = abj_parameters[block][name]
-                self.__setParameter(block, name, value)
-
-        self.eng.set_param(self.modelName,
-                           'SimulationCommand', 'continue', 'SimulationCommand', 'pause', 
-                           nargout=0)
-        
-        return self.__get_obs(obsInfo)
-
-    def disconnectMatlab(self):
-        print('[ MNG] Disconnecting Env')
-
-        self.eng.set_param(self.modelName, 'SimulationCommand', 'stop', nargout=0)
-        self.eng.quit()
-
-        print('[ MNG] Disconnected Successfully')
