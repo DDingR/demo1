@@ -13,5 +13,5 @@ slprj
 ## VS cache directory
 .vs/
 __pychace__
-.DS_Store
+*.DS_Store
 
