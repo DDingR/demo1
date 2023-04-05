@@ -6,12 +6,12 @@
 .MATLABDriveTag
 
 ## ignore directory
-# cmproject
+cmproject
 slprj
 # [/Ll]ibrary/
 
 ## VS cache directory
 .vs/
 __pychace__
-
+.DS_Store
 
