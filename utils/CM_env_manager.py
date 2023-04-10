@@ -10,23 +10,46 @@ class CM_dict():
         self.read_msg = "expr {$Qu(" + self.name + ")}\r"
 
 class CM_Manager():
-    def __init__(self, CM_PATH, TCP_IP, TCP_PORT) -> None:
+    def __init__(self, reporter, CM_PATH, TCP_IP, TCP_PORT, testRun) -> None:
         os.system(f"{CM_PATH} -cmdport {TCP_PORT} &")
         time.system(2)
         
+        self.reporter = reporter
+
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((TCP_IP, TCP_PORT))
-    
-    def loadTestRun(self, testRun):
+        self.reporter.info("CarMaker Connected by TCP Socket")
+
+        self.__loadTestRun(testRun)
+
+    def __send(self, msg):
+        msg = msg + "\r" 
+        self.socket.__send(msg.encode())
+        time.sleep(1)
+        return self.socket.recv(200)
+
+    def __waitForStatus(self, status):
+        self.__send("WaitForStatus %s" % (status))
+        while 1:
+            data = self.socket.recv(self.BUFFER_SIZE)
+            if '0' in data.decode():
+                break
+
+    def __loadTestRun(self, testRun):
+        self.reporter.info("Loading testRun: %s" % (testRun))        
         msg = "LoadTestRun %s" % (testRun)
-        self.send(msg)
+        self.__send(msg)
         time.sleep(500)
 
-    def startTestRun(self):
-        pass
+    def __startTestRun(self):
+        msg = "StartSum"
+        self.__send(msg)
+        self.__waitForStatus("running")
 
-    def stopTestRun(self):
-        pass
+    def __stopTestRun(self):
+        msg = "StopSum"
+        self.__send(msg)
+        self.__waitForStatus("idle")
 
     def subscribe(self, quantity):
         pass
@@ -40,10 +63,11 @@ class CM_Manager():
     def DVA_release(self):
         pass
 
-    def send(self, msg):
-        msg = msg + "\r" 
-        msg = msg.encode('utf-8')
-        self.socket.send(msg)
-        time.sleep(1)
-        return self.socket.recv(200)
 
+    def reset(self):
+        self.__stopTestRun()
+        self.__startTestRun()
+        pass
+
+    def step(self):
+        pass
