@@ -1,9 +1,25 @@
 import matlab.engine
 
-class SimManager():
+class SimManager:
     def __init__(self, modelName, obsInfo) -> None:
         self.modelName = modelName
         self.obsInfo = obsInfo
+
+    def __get_obs(self, obsInfo):
+        tout = [self.eng.workspace['tout']]
+
+        obs = []
+        for name in obsInfo:
+            obs.append(self.eng.workspace[name])
+        
+        return tout, obs
+    
+    def __setParameter(self, block, name, value):
+        self.eng.set_param(
+            '{}/{}'.format(self.modelName, block),
+            name, str(value),
+            nargout=0
+        )
 
     def connectMatlab(self):
         print('[ MNG] Connecting Matlab')
@@ -19,7 +35,7 @@ class SimManager():
         )
         print('[ MNG] Loaded Successfully')
 
-    def reset(self, initial_parameters):
+    def reset(self, obsInfo, initial_parameters):
         # print('[ MNG] Reset Env')
         self.eng.set_param(self.modelName, 'SimulationCommand', 'stop', nargout=0)
 
@@ -32,9 +48,9 @@ class SimManager():
                            'SimulationCommand', 'start', 'SimulationCommand', 'pause', 
                            nargout=0)
         
-        return self.__get_obs()
+        return self.__get_obs(obsInfo)
 
-    def step(self, abj_parameters):
+    def step(self, obsInfo, abj_parameters):
         for block in abj_parameters:
             for name in abj_parameters[block]:
                 value = abj_parameters[block][name]
@@ -44,23 +60,7 @@ class SimManager():
                            'SimulationCommand', 'continue', 'SimulationCommand', 'pause', 
                            nargout=0)
         
-        return self.__get_obs()
-
-    def __get_obs(self):
-        tout = [self.eng.workspace['Time']]
-
-        obs = []
-        for name in self.obsInfo:
-            obs.append(self.eng.workspace[name])
-        
-        return tout, obs
-    
-    def __setParameter(self, block, name, value):
-        self.eng.set_param(
-            'demo2/CarMaker/VehicleControl/CreateBus VhclCtrl/{}/{}'.format(self.modelName, block),
-            name, str(value),
-            nargout=0
-        )
+        return self.__get_obs(obsInfo)
 
     def disconnectMatlab(self):
         print('[ MNG] Disconnecting Env')

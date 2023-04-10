@@ -8,6 +8,7 @@ from datetime import datetime
 import json
 
 def main(args):
+    train_name = args.train_name    
     reporter = reporter_loader(args.loggerLevel, train_name)
 
     with open(args.param_path) as f:
@@ -16,10 +17,10 @@ def main(args):
     agent_param = param['agent_param']
     RL_param = param['RL_param']
     
-    train_name = args.train_name
-
     agent = agent_loader(reporter, agent_param, RL_param)
-    env = 1
+    obsList = ["Vx", "Vy", "YawRate"]
+    env = SimManager("demo2", obsList)
+    env.connectMatlab()
 
     if args.train:
         reporter.info(f"[INFO] Training started!")
@@ -31,6 +32,7 @@ def main(args):
         reporter.info(f"[INFO] Demostration finished!")
 
     reporter.info(f"[INFO] Terminating process.")
+    env.disconnectMatlab()
 
 if __name__ == "__main__":
     now = datetime.now()

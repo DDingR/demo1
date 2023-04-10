@@ -1,9 +1,7 @@
 
 import random
-import gym
 from collections import deque
 import numpy as np
-import matplotlib.pyplot as plt
 
 import torch
 from torch import nn, cat
@@ -93,7 +91,8 @@ class DDPG_Agent:
         # env parameters
         self.state_dim = len(agent_param["obs_list"])
         self.action_dim = len(agent_param["ctrl_list"])
-        self.action_bound = [float(ctrl_max) for ctrl_max in agent_param["ctrl_max"]]
+        # self.action_bound = [ctrl_max for ctrl_max in agent_param["ctrl_max"]]
+        self.action_bound = np.pi/3
 
         # hyperparameters
         self.GAMMA = RL_param["gamma"]

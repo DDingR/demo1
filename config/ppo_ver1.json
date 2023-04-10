@@ -8,16 +8,16 @@
 
     "agent_param": {
         "obs_list": {
-            "obs1": "obsExample1",
-            "obs2": "obsExample2"
+            "obs1": "Vx",
+            "obs2": "Vy",
+            "obs3": "YawRate"
+
         },
         "ctrl_list": {
-            "ctrl1": "ctrlExample1",
-            "ctrl2": "ctrlExample2"
+            "ctrl1": "steer"
         },
         "ctrl_max": {
-            "ctrl1": "1",
-            "ctrl2": "2"            
+            "ctrl1": 1            
         }
     },
 
