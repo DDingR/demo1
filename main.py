@@ -1,6 +1,6 @@
 from utils.agent_manager import *
 from utils.reporter import *
-from utils.env_manager import *
+from utils.CM_env_manager import *
 from utils.others import *
 
 import argparse
@@ -23,15 +23,15 @@ def main(args):
     env.connectMatlab()
 
     if args.train:
-        reporter.info(f"[INFO] Training started!")
+        reporter.info(f"Training started!")
         agent_train(reporter, agent, env, train_param, agent_param, RL_param)
-        reporter.info(f"[INFO] Training finished!")
+        reporter.info(f"Training finished!")
     else:
-        reporter.info(f"[INFO] Demostration started!")
+        reporter.info(f"Demostration started!")
         agent_demostraion(reporter, agent, env)
-        reporter.info(f"[INFO] Demostration finished!")
+        reporter.info(f"Demostration finished!")
 
-    reporter.info(f"[INFO] Terminating process.")
+    reporter.info(f"Terminating process.")
     env.disconnectMatlab()
 
 if __name__ == "__main__":

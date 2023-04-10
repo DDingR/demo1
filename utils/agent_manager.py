@@ -15,14 +15,14 @@ def rewardCalc(obs):
     state, reward, isDone
 
 def agent_loader(reporter, agent_param, RL_param):
-    reporter.info(f"[INFO] Agent loading started.")    
+    reporter.info(f"Agent loading started.")    
     algorithm = RL_param["Algorithm"]
 
     if algorithm == "DDPG":
         agent = DDPG_Agent(reporter, agent_param, RL_param)
-        reporter.info(f"[INFO] Agent loading finished.")        
+        reporter.info(f"Agent loading finished.")        
     else:
-        reporter.critical(f"[CRITICAL] Unavailable RL algorithm. Your algorithm {algorithm}")
+        reporter.critical(f"Unavailable RL algorithm. Your algorithm {algorithm}")
         exit()
 
     return agent
@@ -88,7 +88,7 @@ def __DDPG_agent_train(reporter, agent, env, train_param, agent_param):
             score += reward[0][0]
             state = next_state
 
-            reporter.info(f"[INFO] EPISODE: {e+1} |SCORE: {round(score, 3)}")
+            reporter.info(f"EPISODE: {e+1} |SCORE: {round(score, 3)}")
             agent.tensorboardWrite(score, e)
 
         agent.tensorboardWriter.flush()
@@ -100,7 +100,7 @@ def agent_train(reporter, agent, env, train_param, agent_param, RL_param):
     if algorithm == "DDPG":
         __DDPG_agent_train(reporter, agent, env, train_param, agent_param)
     else:
-        reporter.critical(f"[CRITICAL] Unavailable RL algorithm. Your algorithm {algorithm}")
+        reporter.critical(f"Unavailable RL algorithm. Your algorithm {algorithm}")
         exit()
 
 def agent_demostraion(reporter, agent, env):
