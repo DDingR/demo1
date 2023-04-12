@@ -22,87 +22,100 @@ class NN(nn.Module):
 
 def G(X):
     x1, x2, u = X
-    return 1/3*np.sin(x1/3+np.pi) + 1/2*np.sin(x2) + 1/5*np.sin(u/3)
+    return 1/3*np.sin(x1/3+np.pi)*1/2*np.sin(x2) + 1/5*np.sin(u/3)*x2
 
 def dG(X):
     x1, x2, u = X
-    return [1/3*1/3*np.cos(x1/3+np.pi), 1/2*np.cos(x2), 1/5*1/3*np.cos(u/3)]
+    return [
+        1/3*1/3*np.cos(x1/3+np.pi)*1/2*np.sin(x2),
+        1/3*np.sin(x1/3+np.pi)*1/2*np.cos(x2) + 1/5*np.sin(u/3),
+        1/5*1/3*np.cos(u/3)*x2
+    ]
 
 def main():
-    model = NN()
+    EPISODE = int(1e4)
+    EPOCH = int(1e1)
+    BATCH_SIZE = 256
+    SAVE_PER_EPISODE = int(EPISODE / 10)
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = NN().to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    lossList = []
 
-    for epoch in range(100000):
-        X_list = np.random.randn(1, 256, 3) * 5
-        # dataSet = F(X_list) + G(X_list)
+    loss_list = []
 
-        # train
-        target = G(X_list[0].T)
-        # X_list = np.reshape(X_list, [1, 3, 64])
-        X_list = np.array(X_list, dtype=np.float32)        
-        X_list = torch.as_tensor(X_list)
-        target = np.array(target, dtype=np.float32)        
-        target = torch.as_tensor(target)
-        pred = model(X_list)
-        target = np.reshape(target, [1, 256, 1])
-
-        # print(pred.shape)
-        # print(target.shape)
-        loss = loss_fn(pred, target)
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+    for episode in range(EPISODE):
 
         with torch.no_grad():
             X_list = np.random.randn(1, 32, 3) * 5
             target = G(X_list[0].T)
             # X_list = np.reshape(X_list, [1, 3, 16])
             X_list = np.array(X_list, dtype=np.float32)
-            X_list = torch.as_tensor(X_list)    
-            target = np.array(target, dtype=np.float32)        
-            target = torch.as_tensor(target)     
+            X_list = torch.as_tensor(X_list, device=device)    
+            target = np.array(target, dtype=np.float32)  
             target = np.reshape(target, [1, 32, 1])
-   
+            target = torch.as_tensor(target, device=device)     
+
             pred = model(X_list)
             loss = loss_fn(pred, target).item()
+            loss_list.append(loss)
             # print(f"loss: {loss}")
-            lossList.append(loss)
 
-        if epoch % 1000 == 0:
-            X_list = np.arange(2,4,0.001)
-
-            y_list = []
-            NN_y_list = []
-
-            for x in X_list:
-                X = np.array([[1.,1.,x]], dtype=np.float32)
-                X = torch.tensor(X, requires_grad=True)
-
-                target = dG((X[0].detach().numpy()))
-                y_list.append(np.dot(target, X[0].T.detach().numpy()))
-
-                pred = model(X)
-                pred.backward()
-
-                NN_y_list.append(np.dot(X.grad.detach().numpy(), X[0].T.detach().numpy()))
-
-            plt.plot(X_list, y_list, X_list, NN_y_list)
-            plt.savefig(str(epoch) + '.png')
+        if episode % SAVE_PER_EPISODE == 0:
+            fig_name = './fig/loss.png'
+            plt.plot(loss_list)
+            plt.savefig(fig_name)
             plt.clf()
+            print(f"[INFO] LOSS FUNCTION PLOTTED at {fig_name}")
 
-            print(f"EPOCH {epoch}, LOSS {loss}")
+            onnx_name = './savemodel/NN_EPISODE' + str(episode) + '.onnx'
+            model.eval()
+            dummy_input = torch.randn(1,3,device=device, requires_grad=True)
+            torch.onnx.export(
+                model,
+                dummy_input,
+                onnx_name,
+                verbose=False
+            )
+            print(f"[INFO] ONNX SAVED at {onnx_name}")
+
+            print(f"EPISODE {episode}, LOSS {loss}")
+
+
+        for _ in range(EPOCH):
+            X_list = np.random.randn(1, BATCH_SIZE, 3) * 5
+            # dataSet = F(X_list) + G(X_list)
+
+            # train
+            target = G(X_list[0].T)
+            # X_list = np.reshape(X_list, [1, 3, 64])
+            X_list = np.array(X_list, dtype=np.float32)        
+            X_list = torch.as_tensor(X_list, device=device)
+            target = np.array(target, dtype=np.float32)  
+            target = np.reshape(target, [1, BATCH_SIZE, 1])
+            target = torch.as_tensor(target, device=device)
+            pred = model(X_list)
+
+            loss = loss_fn(pred, target)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
 
     print(f"[INFO] train finished. \nloss: {loss}")
-
-
-
-# a = torch.tensor([1.], requires_grad=True)
-# Q = torch.sin(a)
-# Q.backward(gradient=torch.tensor([1.]))
-# a.grad == np.cos(1.0)
-
+    
+    onnx_name = './savemodel/NN_FINAL.onnx'
+    model.eval()
+    dummy_input = torch.randn(1,3,device=device, requires_grad=True)
+    torch.onnx.export(
+        model,
+        dummy_input,
+        onnx_name,
+        verbose=False
+    )
+    print(f"[INFO] FINAL ONNX SAVED at {onnx_name}")
+    
 if __name__ == '__main__':
     main()
