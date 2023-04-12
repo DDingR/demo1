@@ -43,13 +43,7 @@ def main():
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-    loss_list = []
-
-    for episode in range(EPISODE):
-
-        with torch.no_grad():
-            X_list = np.random.randn(1, 32, 3) * 5
-            target = G(X_list[0].T)
+    loss_list = [] 
             # X_list = np.reshape(X_list, [1, 3, 16])
             X_list = np.array(X_list, dtype=np.float32)
             X_list = torch.as_tensor(X_list, device=device)    

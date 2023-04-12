@@ -21,57 +21,26 @@ class Actor(nn.Module):
         self.action_dim = action_dim
         self.action_bound = action_bound
 
-        # self.fc1 = Dense(64, activation='relu')
-        # self.fc2 = Dense(32, activation='relu')
-        # self.fc3 = Dense(16, activation='relu')
-        # self.fc_out = Dense(
-        #     self.action_dim,
-        #     activation='tanh'
-        # )
-
-        # self.NN = nn.Sequential(
-        #     nn.Linear(state_dim, 64),
-        #     nn.ReLU(),
-        #     nn.Linear(64, 32),
-        #     nn.ReLU(),
-        #     nn.Linear(32, 16),
-        #     nn.ReLU(),            
-        #     nn.Linear(16, self.action_dim),
-        #     nn.Tanh()
-        # )
         self.Flatten = nn.Flatten()
-        self.fc1 = nn.Linear(3, 64)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(64, 32)
-        self.relu2 = nn.ReLU()
-        self.fc3 = nn.Linear(32, 16)
-        self.relu3 = nn.ReLU()
-        self.fc4 = nn.Linear(16, self.action_dim)
-        self.tanh = nn.Tanh()                
+        self.fc = nn.Sequential(
+            nn.Linear(3, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, self.action_dim),
+            nn.Tanh()
+        )              
 
     def forward(self, x):
         x = self.Flatten(x)
-        x = self.fc1(x)
-        x = self.relu1(x)
-        x = self.fc2(x)
-        x = self.relu2(x)
-        x = self.fc3(x)
-        x = self.relu3(x)
-        x = self.fc4(x)
-        x = self.tanh(x)
+        x = self.fc(x)
         return x
 
 class Critic(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Critic, self).__init__()
-        # self.fc1_x = Dense(32, activation='relu')
-        # self.fc1_a = Dense(32, activation='relu')
-        # self.fc2 = Dense(32, activation='relu')
-        # self.fc3 = Dense(16, activation='relu')
-        # self.fc_out = Dense(
-        #     1,
-        #     kernel_initializer=RandomUniform(-1e-3, 1e-3)
-        # )
 
         self.fc1_state = nn.Linear(3, 32)
         self.relu1_state = nn.ReLU()
@@ -131,11 +100,6 @@ class Agent:
         self.buffer = deque(maxlen=self.BUFFER_SIZE)
 
         # model
-        # self.Actor_model = Actor(self.state_dim, self.action_dim, self.action_bound)
-        # self.Actor_target_model = Actor(self.state_dim, self.action_dim, self.action_bound)
-        # self.Critic_model = Critic(self.state_dim, self.action_dim)
-        # self.Critic_target_model = Critic(self.state_dim, self.action_dim)
-
         self.Actor_model = Actor(self.state_dim, self.action_dim, self.action_bound).to(self.device)
         self.Actor_target_model = Actor(self.state_dim, self.action_dim, self.action_bound).to(self.device)
         self.Critic_model = Critic(self.state_dim, self.action_dim).to(self.device)
@@ -204,11 +168,6 @@ class Agent:
             #     target_model[i].weight = TAU * model[i].weight + (1-TAU) * target_model[i].weight
             for target_param, param in zip(target_model.parameters(), model.parameters()):
                 target_param.data.copy_(TAU*param.data + target_param.data*(1.0 - TAU))
-
-
-    # def polyak_update(polyak_factor, target_network, network):
-    #     for target_param, param in zip(target_network.parameters(), network.parameters()):
-    #         target_param.data.copy_(polyak_factor*param.data + target_param.data*(1.0 - polyak_factor))
 
     def ou_noise(self, pre_noise):
         nt = np.random.normal(size=self.action_dim)

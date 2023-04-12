@@ -1,5 +1,5 @@
 clear
-clf(1); clf(2); clf(3)
+clf(1); clf(2); clf(3); clf(4)
 %% test range
 x1 = 1.5:0.01:4.5;
 x2 = 1.5:0.01:4.5;
@@ -32,8 +32,6 @@ for i = 1:1:length(x1)
         NN_non_train(i,j) = predict(nn_non_train, dlarray([x1(i) x2(j) 1], "BC"));
     end
 end
-
-
 %% plot
 % target plot
 figure(1)
@@ -46,7 +44,6 @@ colorbar
 
 % NN predict plot
 figure(2)
-
 mesh(X1,X2,NN)
 view(0,90)
 title("Predict")
