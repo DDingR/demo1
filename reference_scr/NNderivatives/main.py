@@ -3,6 +3,8 @@ from torch import nn
 import numpy as np
 import matplotlib.pyplot as plt
 
+from others import *
+
 # START ========================================
 # CONSTANTS ====================================
 EPISODE = int(1e4)
@@ -13,58 +15,11 @@ SAVE_PER_EPISODE = int(EPISODE / 10)
 # END ==========================================
 # CONSTANTS ====================================
 
-class NN(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(3, 100),
-            nn.ReLU(),
-            nn.Linear(100, 100),
-            nn.ReLU(),
-            nn.Linear(100, 100),
-            nn.ReLU(),
-            nn.Linear(100, 1)
-        )
-    def forward(self, x):
-        x = self.fc(x)
-        return x
-
 def G(X, c):
     _, y_dot, psi_dot = X
     m_hat, m, x_ddot = c
 
     return (m_hat - m)/m_hat * (x_ddot - y_dot * psi_dot)
-
-# def dGdX(X):
-#     _, y_dot, psi_dot = X
-#     return [0, -psi_dot, -y_dot]
-
-# def dGdU(U):
-#     return [0,0,0]
-
-def np2tensor(x, device):
-    x = np.array(x)
-    if len(x.shape) == 2:
-        x = x.reshape(1, x.shape[0], x.shape[1])
-    elif len(x.shape) == 1:
-        x = x.reshape(1, x.shape[0], 1)
-    else:
-        raise Exception(f"[ERR] input data is empty")
-    x = torch.as_tensor(x, device=device, dtype=torch.float32)
-    return x
-
-def saveONNX(model, device, episode):
-    onnx_name = './savemodel/NN_' + str(episode) + '.onnx'
-    model.eval()
-    dummy_input = torch.randn(1,3,device=device, requires_grad=True)
-    torch.onnx.export(
-        model,
-        dummy_input,
-        onnx_name,
-        verbose=False
-    )
-    print(f"[INFO] ONNX SAVED at {onnx_name}")
-
 
 def main():
     m_hat = 1500
