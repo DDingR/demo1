@@ -2,8 +2,13 @@ import torch
 from torch import nn
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from others import *
+
+raw_csv_dir = ""
+
+
 
 # START ========================================
 # CONSTANTS ====================================
@@ -22,15 +27,16 @@ def G(X, c):
     return (m_hat - m)/m_hat * (x_ddot - y_dot * psi_dot)
 
 def main():
-    m_hat = 1500
-    m = 1600
-    x_ddot = 1
+    # dataset load
+    raw_csv = os.listdir("raw_csv_dir/" + raw_csv_dir)
+    dataset = [csv2dataset(csv_file) for csv_file in raw_csv]
+    dataset = np.concatenate(dataset, axis=1)
 
+    # Trainer Setting
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = NN().to(device)
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
     loss_list = []
 
     # VALIDATION

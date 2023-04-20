@@ -56,9 +56,9 @@ def csv2dataset(filename):
     '''
     data = []
     with open(filename, newline='') as f:
-        reader = csv.reader(f)
+        reader = csv.reader(f, delimiter=' ')
         for row in reader:  
-            data.append(row)
+            data.append(np.float_(row))
     data = np.array(data, dtype=np.float32)
     return data
 # END =======================================

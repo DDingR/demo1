@@ -301,7 +301,7 @@ if __name__ == '__main__':
     # parameters
     score_avg_list = []
     score_avg = 0
-    EPISODE = 1
+    EPISODE = int(1e3)
 
     # EPISODE start
     for e in range(EPISODE):
