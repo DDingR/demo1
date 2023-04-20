@@ -91,7 +91,7 @@ def main():
                 # size: (var_number, sample_number)
             
             csv_name = cur_dir + "/results/" + cur_time + str(i) + ".csv"
-            np.savetxt(csv_name, result)
+            np.savetxt(csv_name, result, delimiter=",")
 
     except TestbenchPortException as ex:
         reporter.warning("TestbenchPortException occured:")

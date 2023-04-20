@@ -6,9 +6,7 @@ import os
 
 from others import *
 
-raw_csv_dir = ""
-
-
+raw_csv_dir = "0420_0459PM"
 
 # START ========================================
 # CONSTANTS ====================================
