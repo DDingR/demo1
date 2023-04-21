@@ -8,80 +8,125 @@ from others import *
 
 raw_csv_dir = "0420_0459PM"
 
+# Cf = 435.418/0.296296;
+# Cr = 756.349/(0.6*pi/180);
+# m = 1644.80;
+# Iz = 2488.892;
+# lf = 1.240;
+# lr = 1.510;
+# w = 0.8;
+
 # START ========================================
 # CONSTANTS ====================================
-EPISODE = int(1e4)
+Ca = 756.349/(0.6*np.pi/180)
+l = 1.240
+m = 1644.80
+
+EPISODE = int(1e5)
 EPOCH = int(1e1)
-BATCH_SIZE = 256
-VALIDATION_SIZE = 32
-SAVE_PER_EPISODE = int(EPISODE / 10)
+BATCH_SIZE = 128
+VALIDATION_SIZE = 16
+SAVE_START = int(1e2)
+PLOT_PER_EPISODE = int(1e3)
 # END ==========================================
 # CONSTANTS ====================================
 
-def G(X, c):
-    _, y_dot, psi_dot = X
-    m_hat, m, x_ddot = c
+# known function
+# sample_data = [ax vx vy yawRate FRL FRR StrAng] ->  7
 
-    return (m_hat - m)/m_hat * (x_ddot - y_dot * psi_dot)
+def F(sample):
+    # [vx, vy, yawRate, Frl, Frr, StrAng] = sample
+
+    vx = sample[:,0]
+    vy = sample[:,1]    
+    yawRate = sample[:,2]
+    Frl = sample[:,3]
+    Frr = sample[:,4]
+    StrAng = sample[:,5]
+    
+    Fxf = 0
+    vx = np.where(vx > 1e-5, vx, 1e-5)
+    Fyf = 2 * Ca * (StrAng - np.arctan2((vy+l*yawRate), vx))
+
+    x_dot = ((Fxf * np.cos(StrAng) - Fyf * np.sin(StrAng)) + Frl+Frr) * 1/m + yawRate*vy
+    return x_dot
 
 def main():
     # dataset load
-    raw_csv = os.listdir("raw_csv_dir/" + raw_csv_dir)
-    dataset = [csv2dataset(csv_file) for csv_file in raw_csv]
-    dataset = np.concatenate(dataset, axis=1)
+    # raw_csv = os.listdir("raw_csv_dir/" + raw_csv_dir)
+    raw_csv = "0420_0549PM0.csv"
+    # dataset = [csv2dataset(csv_file) for csv_file in raw_csv]
+    # dataset = np.concatenate(dataset, axis=1)
+    dataset = csv2dataset(raw_csv)
+    np.random.shuffle(dataset[0])
+    [sample_num, _] = dataset.shape
+
+    test_dataset = dataset[0:int(sample_num*0.1), :]
+    train_dataset = dataset[int(sample_num*0.1):, :]
 
     # Trainer Setting
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = NN().to(device)
+    print(f"device({device}) is walking")
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_list = []
 
-    # VALIDATION
-    for episode in range(EPISODE):
-        with torch.no_grad():
-            X_list = np.random.randn(VALIDATION_SIZE, 3) * 5
-            c = np.array([m_hat, m, x_ddot], dtype=np.float32)
-            target = G(X_list.T, c.T)    
+    try: 
+        # VALIDATION
+        for episode in range(EPISODE):
+            with torch.no_grad():
+                random_pick = np.random.choice(len(test_dataset), VALIDATION_SIZE)
+                val_data = test_dataset[random_pick,:]
+                target = val_data[:,0]
+                input_data = val_data[:,1:]
+                analystic_target = F(input_data)
 
-            X_list = np2tensor(X_list, device)    
-            target = np2tensor(target, device)
+                target = target-analystic_target
 
-            pred = model(X_list)
-            loss = loss_fn(pred, target).item()
-            loss_list.append(loss)
+                X_list = np2tensor(input_data, device)    
+                target = np2tensor(target, device)
 
-            if loss < loss_list[-1] and episode > EPISODE/2:
-                saveONNX(model, device, episode)
+                pred = model(X_list)
+                loss = loss_fn(pred, target).item()
+                loss_list.append(loss)
 
-        # TRAIN REPORT
-        if episode % SAVE_PER_EPISODE == 0:
-            print(f"[INFO] EPISODE {episode}, LOSS {loss}")
+                if loss < loss_list[-1] and episode > SAVE_START:
+                    saveONNX(model, device, episode)
 
-            fig_name = './fig/loss.png'
-            plt.plot(loss_list)
-            plt.savefig(fig_name)
-            plt.clf()
-            print(f"[INFO] LOSS FUNCTION PLOTTED at {fig_name}")
+            # TRAIN REPORT
+            if episode % PLOT_PER_EPISODE == 0:
+                print(f"[INFO] EPISODE {episode}, LOSS {loss}")
 
-        # EPOCH TRAIN
-        for _ in range(EPOCH):
-            X_list = np.random.randn(BATCH_SIZE, 3) * 5
-            c = np.array([m_hat, m, x_ddot], dtype=np.float32)
-            target = G(X_list.T, c.T)    
+                fig_name = './fig/loss.png'
+                plt.plot(loss_list)
+                plt.savefig(fig_name)
+                plt.clf()
+                print(f"[INFO] LOSS FUNCTION PLOTTED at {fig_name}")
 
-            X_list = np2tensor(X_list, device)
-            target = np2tensor(target, device)
+            # EPOCH TRAIN
+            for _ in range(EPOCH):
+                random_pick = np.random.choice(len(train_dataset), BATCH_SIZE)
+                train_data = train_dataset[random_pick,:]
+                target = train_data[:,0]
+                input_data = train_data[:,1:]
+                analystic_target = F(input_data)
 
-            pred = model(X_list)
-            loss = loss_fn(pred, target)
+                target = target-analystic_target
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                X_list = np2tensor(input_data, device)    
+                target = np2tensor(target, device)
 
-    print(f"[INFO] train finished. \nfinal loss: {loss}")
-    saveONNX(model, device, "FINAL")
-    
+                pred = model(X_list)
+                loss = loss_fn(pred, target)
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+    finally:
+        print(f"[INFO] train finished. \nfinal loss: {loss}")
+        saveONNX(model, device, "FINAL")
+
 if __name__ == '__main__':
     main()

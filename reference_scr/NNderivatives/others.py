@@ -9,7 +9,7 @@ class NN(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.fc = nn.Sequential(
-            nn.Linear(3, 100),
+            nn.Linear(6, 100),
             nn.ReLU(),
             nn.Linear(100, 100),
             nn.ReLU(),
@@ -35,7 +35,7 @@ def np2tensor(x, device):
 def saveONNX(model, device, episode):
     onnx_name = './savemodel/NN_' + str(episode) + '.onnx'
     model.eval()
-    dummy_input = torch.randn(1,3,device=device, requires_grad=True)
+    dummy_input = torch.randn(1,6,device=device, requires_grad=True)
     torch.onnx.export(
         model,
         dummy_input,
@@ -56,7 +56,7 @@ def csv2dataset(filename):
     '''
     data = []
     with open(filename, newline='') as f:
-        reader = csv.reader(f, delimiter=' ')
+        reader = csv.reader(f, delimiter=',')
         for row in reader:  
             data.append(np.float_(row))
     data = np.array(data, dtype=np.float32)

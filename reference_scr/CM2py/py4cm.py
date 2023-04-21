@@ -16,7 +16,7 @@ def main():
     DemoMAPort = None
 
     # rec config
-    simtime = 100.0
+    simtime = 10000.0
     trg_testrun = "demo1"
     rec_num = 1
     down_sample_rate = 10
@@ -26,7 +26,8 @@ def main():
         "Car.vx", "Car.vy", "Car.YawRate",
         # "Car.Aero.Frx_1.x",
         # "Car.WheelSpd_FL", "Car.WheelSpd_FR", "Car.WheelSpd_RL", "Car.WheelSpd_RR",
-        # "Car.FxFL", "Car.FxFR", "Car.FxRL", "Car.FxRR",
+        # "Car.FxFL", "Car.FxFR", 
+        "Car.FxRL", "Car.FxRR",
         # "Car.FyFL", "Car.FyFR", 
         "Car.FyRL", "Car.FyRR",
         "VC.Steer.Ang"
