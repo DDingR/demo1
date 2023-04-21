@@ -1,6 +1,7 @@
 clear
 
-data_dir = "raw_csv_data/0420_0549PM0/0420_0549PM0.csv";
+file_name = "0421_0641PM0";
+data_dir = "raw_csv_data/" + file_name + "/" + file_name + ".csv";
 
 data = csvread(data_dir);
 [data_num, sample_num] = size(data);
@@ -31,12 +32,12 @@ end
 %% save
 
 trg_data = array2table(dataset);
-writetable(trg_data, '0420_0549PM0.csv');
+writetable(trg_data, file_name + ".csv");
 
 
 %% plotter
-% for i = 2:1:data_num
-%     figure(i)
-%     plot(data(1,:), data(i,:))
-% end
+for i = 2:1:data_num
+    figure(i)
+    plot(data(1,:), data(i,:))
+end
 

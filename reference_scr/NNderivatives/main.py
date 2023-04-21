@@ -3,8 +3,11 @@ from torch import nn
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from time import time, localtime, strftime
+
 
 from others import *
+from reporter import *
 
 raw_csv_dir = "0420_0459PM"
 
@@ -22,12 +25,12 @@ Ca = 756.349/(0.6*np.pi/180)
 l = 1.240
 m = 1644.80
 
-EPISODE = int(1e5)
-EPOCH = int(1e1)
+EPISODE = int(1e3)
+EPOCH = int(1e3)
 BATCH_SIZE = 128
 VALIDATION_SIZE = 16
-SAVE_START = int(1e2)
-PLOT_PER_EPISODE = int(1e3)
+SAVE_START = int(1)
+PLOT_PER_EPISODE = int(1)
 # END ==========================================
 # CONSTANTS ====================================
 
@@ -45,16 +48,24 @@ def F(sample):
     StrAng = sample[:,5]
     
     Fxf = 0
-    vx = np.where(vx > 1e-5, vx, 1e-5)
-    Fyf = 2 * Ca * (StrAng - np.arctan2((vy+l*yawRate), vx))
+    # vx = np.where(vx > 1e-5, vx, 1e-5)
+    # Fyf = 2 * Ca * (StrAng - np.arctan2((vy+l*yawRate), vx))
+    Fyf = 2 * Ca * (StrAng - ((vy+l*yawRate)/ vx))
+
 
     x_dot = ((Fxf * np.cos(StrAng) - Fyf * np.sin(StrAng)) + Frl+Frr) * 1/m + yawRate*vy
     return x_dot
 
 def main():
+    # reporter config
+    cur_dir = os.getcwd()
+    cur_time = strftime("%m%d_%I%M%p", localtime(time()))
+    log_name = cur_time + ".log"
+    reporter = reporter_loader("info", log_name)
+
     # dataset load
     # raw_csv = os.listdir("raw_csv_dir/" + raw_csv_dir)
-    raw_csv = "0420_0549PM0.csv"
+    raw_csv = "0421_0641PM0.csv"
     # dataset = [csv2dataset(csv_file) for csv_file in raw_csv]
     # dataset = np.concatenate(dataset, axis=1)
     dataset = csv2dataset(raw_csv)
@@ -67,8 +78,9 @@ def main():
     # Trainer Setting
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model = NN().to(device)
-    print(f"device({device}) is walking")
+    print(f"device({device}) is working")
     loss_fn = nn.MSELoss()
+   
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_list = []
 
@@ -88,7 +100,7 @@ def main():
                 target = np2tensor(target, device)
 
                 pred = model(X_list)
-                loss = loss_fn(pred, target).item()
+                loss = torch.sqrt(loss_fn(pred, target)).item()
                 loss_list.append(loss)
 
                 if loss < loss_list[-1] and episode > SAVE_START:
@@ -118,7 +130,7 @@ def main():
                 target = np2tensor(target, device)
 
                 pred = model(X_list)
-                loss = loss_fn(pred, target)
+                loss = torch.sqrt(loss_fn(pred, target))
 
                 optimizer.zero_grad()
                 loss.backward()
